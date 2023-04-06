@@ -12,19 +12,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const (
-	appID       = "101570536"
-	appSecret   = ""
-	redirectURI = "https://gpt.itislee.com/callback"
-)
-//DB 
-const (
-	username = ""
-	password = ""
-	dbname = "qqauth"
-	tablename = "auth_openid"
-)
-
 func main() {
 	log.Printf("server started")
 
