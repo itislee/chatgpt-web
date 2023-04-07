@@ -60,9 +60,14 @@ func handleCallback(c *gin.Context, db Database) {
 		c.String(http.StatusInternalServerError, "Failed to get openID.")
 		return
 	}
+	nickName, err := getUserInfo(openID, accessToken)
+	if err != nil {
+		log.Printf("get user info.nick=%s %v", nickName, err)
+	}
 
 	c.SetCookie("access_token", accessToken, 3600, "/", "", false, true)
-	c.SetCookie("open_id", openID, 3600, "/", "", false, true)
+	c.SetCookie("open_id", openID, 3600, "/", "", false, false)
+	c.SetCookie("nick", nickName, 3600, "/", "", false, false)
 
 	log.Printf("openid=%s token=%s", openID, accessToken)
 
@@ -72,7 +77,7 @@ func handleCallback(c *gin.Context, db Database) {
 		c.String(http.StatusInternalServerError, "请联系yaoli添加权限.openid=%s", openID)
 		return
 	}
-	log.Printf("db ok.login ok")
+	log.Printf("db ok.login ok.openid=%s", openID)
 
 	//c.String(http.StatusOK, "Authorization successful.")
 	log.Printf("Host=%s", c.Request.Host)
@@ -106,9 +111,8 @@ func checkAccessToken(c *gin.Context, db Database) {
 		c.String(http.StatusInternalServerError, "权限检查失败 请联系Yaoli添加权限.")
 		return
 	}
-
 	if found {
-		log.Printf("check ok.openid=%s cgi=%s %s", openID, c.Request.Header["X-Original-URI"], c.Request.URL.Path)
+		log.Printf("check ok.openid=%s host=%s X-Original-URI=%s", openID, c.Request.Host, c.GetHeader("X-Original-URI"))
 		c.String(http.StatusOK, "OpenID found in database.")
 	} else {
 		c.String(http.StatusUnauthorized, "OpenID not found in database.")
@@ -138,6 +142,39 @@ func getAccessToken(code string) (string, error) {
 	}
 
 	return values.Get("access_token"), nil
+}
+
+func getUserInfo(openID, accessToken string) (string, error) {
+	userInfoURL := fmt.Sprintf("https://graph.qq.com/user/get_user_info?access_token=%s&oauth_consumer_key=%s&openid=%s",
+	accessToken, appID, openID)
+
+	log.Printf("userinfoURL=%s", userInfoURL)
+	resp, err := http.Get(userInfoURL)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	response, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	var userInfoResponse struct {
+		Ret int `json:"ret"`
+		Msg string `json:"msg"`
+		Nickname string `json:"nickname"`
+		Gender string `json:"gender"`
+	}
+	log.Printf("userinfo response=%s", response)
+
+	if err := json.Unmarshal([]byte(response), &userInfoResponse); err != nil {
+		log.Printf("get openid unmarshal failed", err)
+		return "", err
+	}
+
+	return userInfoResponse.Nickname, nil
+
 }
 
 func getOpenID(accessToken string) (string, error) {
