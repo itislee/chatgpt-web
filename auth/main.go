@@ -81,7 +81,7 @@ func handleCallback(c *gin.Context, db Database) {
 
 	//c.String(http.StatusOK, "Authorization successful.")
 	log.Printf("Host=%s", c.Request.Host)
-	c.Redirect(302, "https://"+c.Request.Host)
+	c.Redirect(302, "https://"+c.Request.Host+"/alert.html")
 }
 
 func checkAccessToken(c *gin.Context, db Database) {

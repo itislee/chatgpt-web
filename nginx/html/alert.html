@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Countdown Alert</title>
+  <style>
+    .modal {
+      position: fixed;
+      z-index: 999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 5px;
+      text-align: center;
+    }
+  </style>
+  <script>
+    let countdown;
+    function startCountdown() {
+      let seconds = 5;
+
+      const countdownText = document.getElementById("countdownText");
+
+      countdown = setInterval(() => {
+        seconds -= 1;
+		countdownText.innerText = `注意信息安全\n\n严禁把公司资料 文档 代码 聊天记录等敏感信息直接上传\n\n倒计时${seconds}秒`
+
+        if (seconds <= 0) {
+			clearInterval(countdown);
+			window.location.href = "https://gpt4.itislee.com"
+        }
+      }, 1000);
+    }
+
+  </script>
+</head>
+<body onload="startCountdown()">
+  <div class="modal">
+    <div class="modal-content">
+      <p id="countdownText">信息安全声明</p>
